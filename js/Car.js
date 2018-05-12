@@ -9,8 +9,6 @@ function carClass() {
   // variables to keep track of car position
   this.carX = 75;
   this.carY = 75;
-  this.carSpeed = 0;
-  this.carAng = -0.5 * Math.PI;
 
   // keyboard hold state variables, to use keys more like buttons
   this.keyHeld_Gas = false;
@@ -26,21 +24,30 @@ function carClass() {
     this.controlKeyForTurnRight = rightKey;
   }
 
-  this.carInit = function() {
+  this.carInit = function(whichGraphic, whichName) {
+    this.myBitmap = whichGraphic;
+    this.myName = whichName;
     this.carReset();
   }
   
   this.carReset = function() {
-    for(var i=0; i<trackGrid.length; i++) {
-      if( trackGrid[i] == TRACK_PLAYER) {
-        var tileRow = Math.floor(i/TRACK_COLS);
-        var tileCol = i%TRACK_COLS;
-        this.carX = tileCol * TRACK_W + 0.5*TRACK_W;
-        this.carY = tileRow * TRACK_H + 0.5*TRACK_H;
-        trackGrid[i] = TRACK_ROAD;
-        break; // found it, so no need to keep searching 
+    this.carSpeed = 0;
+    this.carAng = -0.5 * Math.PI;
+
+    if (this.home == undefined) {
+      for(var i = 0; i < trackGrid.length; i++) {
+        if( trackGrid[i] == TRACK_PLAYER) {
+          var tileRow = Math.floor(i/TRACK_COLS);
+          var tileCol = i % TRACK_COLS;
+          this.homeX = tileCol * TRACK_W + 0.5*TRACK_W;
+          this.homeY = tileRow * TRACK_H + 0.5*TRACK_H;
+          trackGrid[i] = TRACK_ROAD;
+          break; // found it, so no need to keep searching 
+        }
       }
     }
+    this.carX = this.homeX;
+    this.carY = this.homeY;
   }
   
   this.carMove = function() {
@@ -65,9 +72,15 @@ function carClass() {
     var nextX = this.carX + Math.cos(this.carAng) * this.carSpeed;
     var nextY = this.carY + Math.sin(this.carAng) * this.carSpeed;
     
-    if( checkForTrackAtPixelCoord(nextX,nextY) ) {
+    var drivingIntoTileType = getTrackAtPixelCoord(nextX, nextY);
+
+    if (drivingIntoTileType == TRACK_ROAD) {
       this.carX = nextX;
       this.carY = nextY;
+    } else if (drivingIntoTileType == TRACK_GOAL) {
+      document.getElementById("debugText").innerHTML = this.myName + " won the race!";
+      p1.carReset();
+      p2.carReset();
     } else {
       this.carSpeed = 0.0;
     }
@@ -76,7 +89,8 @@ function carClass() {
   }
   
   this.carDraw = function() {
-    drawBitmapCenteredAtLocationWithRotation( carPic, this.carX, this.carY, this.carAng );
+    drawBitmapCenteredAtLocationWithRotation(this.myBitmap, this.carX, this.carY, this.carAng);
+
   }
 
 } // end of car class

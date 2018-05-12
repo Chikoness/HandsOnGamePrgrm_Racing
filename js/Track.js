@@ -12,7 +12,7 @@ var trackGrid =
       1, 0, 0, 1, 1, 0, 0, 1, 4, 4, 1, 1, 0, 0, 0, 1, 1, 0, 0, 1,
       1, 0, 0, 1, 0, 0, 0, 0, 1, 4, 1, 0, 0, 0, 0, 0, 1, 0, 0, 1,
       1, 0, 0, 1, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 1, 0, 0, 1,
-      1, 2, 2, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 5, 0, 0, 1, 0, 0, 1, //// added another car
+      1, 2, 2, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 5, 0, 0, 1, 0, 0, 1,
       1, 0, 0, 1, 0, 0, 5, 0, 0, 0, 5, 0, 0, 1, 0, 0, 1, 0, 0, 1,
       1, 1, 1, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 1, 0, 0, 5, 0, 0, 1,
       1, 1, 5, 1, 0, 0, 1, 1, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1,
@@ -30,7 +30,7 @@ function trackTileToIndex(tileCol, tileRow) {
   return (tileCol + TRACK_COLS*tileRow);
 }
 
-function checkForTrackAtPixelCoord(pixelX,pixelY) {
+function getTrackAtPixelCoord(pixelX,pixelY) {
   var tileCol = pixelX / TRACK_W;
   var tileRow = pixelY / TRACK_H;
   
@@ -41,12 +41,11 @@ function checkForTrackAtPixelCoord(pixelX,pixelY) {
   // first check whether the car is within any part of the track wall
   if(tileCol < 0 || tileCol >= TRACK_COLS ||
      tileRow < 0 || tileRow >= TRACK_ROWS) {
-     return false; // bail out of function to avoid illegal array position usage
+     return TRACK_WALL; //avoid invalid array access, treat out of bounds as wall
   }
   
   var trackIndex = trackTileToIndex(tileCol, tileRow);
- 
-  return (trackGrid[trackIndex] == TRACK_ROAD);
+  return trackGrid[trackIndex];
 }
 
 function drawTracks() {
@@ -54,21 +53,20 @@ function drawTracks() {
   var trackLeftEdgeX = 0;
   var trackTopEdgeY = 0;
   
-  for(var eachRow=0; eachRow<TRACK_ROWS; eachRow++) { // deal with one row at a time
+  for(var eachRow=0; eachRow<TRACK_ROWS; eachRow++) { 
     
-    trackLeftEdgeX = 0; // resetting horizontal draw position for tiles to left edge
+    trackLeftEdgeX = 0;
     
-    for(var eachCol=0; eachCol<TRACK_COLS; eachCol++) { // left to right in each row
+    for(var eachCol=0; eachCol<TRACK_COLS; eachCol++) {
 
-      var trackTypeHere = trackGrid[ trackIndex ]; // getting the track code for this tile        
+      var trackTypeHere = trackGrid[ trackIndex ];        
       canvasContext.drawImage(trackPics[trackTypeHere], trackLeftEdgeX, trackTopEdgeY);
       
-      trackIndex++; // increment which index we're going to next check for in the track        
-      trackLeftEdgeX += TRACK_W; // jump horizontal draw position to next tile over by tile width
-
-    } // end of for eachCol
+      trackIndex++;     
+      trackLeftEdgeX += TRACK_W; 
+    } 
     
-    trackTopEdgeY += TRACK_H; // jump horizontal draw position down by one full tile height
+    trackTopEdgeY += TRACK_H; 
     
-  } // end of for eachRow    
-} // end of drawTracks()
+  }    
+} 
